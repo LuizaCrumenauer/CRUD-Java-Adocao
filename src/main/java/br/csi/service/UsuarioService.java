@@ -28,15 +28,7 @@ public class UsuarioService {
     }
 
     public String inserir(Usuario usuario) {
-        // IMPORTANTE: A senha deve ser hasheada aqui antes de chamar o DAO
-        // Exemplo:
-        // if (usuario.getSenha() != null && !usuario.getSenha().isEmpty()) {
-        //     String senhaHasheada = BCrypt.hashpw(usuario.getSenha(), BCrypt.gensalt());
-        //     usuario.setSenha(senhaHasheada);
-        // } else {
-        //     // Lidar com senha vazia se for um requisito não permitir
-        //     return "Erro: Senha não pode ser vazia.";
-        // }
+
         System.out.println("Service - Inserindo Usuário: " + usuario.getEmail() + " Senha (ANTES DO DAO): " + usuario.getSenha()); // Log para debug
         if (dao.inserir(usuario)) {
             return "Sucesso ao inserir usuário";
@@ -51,19 +43,8 @@ public class UsuarioService {
         if (!alterarSenha) {
             Usuario usuarioExistente = dao.buscar(usuario.getId()); // Assume que buscar(id) não retorna a senha ou retorna a hasheada
             if (usuarioExistente != null) {
-                // Para garantir que a senha não seja alterada para null se não for fornecida
-                // precisamos que o DAO.alterar seja inteligente ou que passemos a senha antiga.
-                // Se o DAO.buscar(id) não retorna a senha, esta abordagem não funciona para manter a senha.
-                // SOLUÇÃO MAIS SEGURA: O DAO.alterar não deve atualizar o campo senha se o valor no objeto for null.
-                // OU, o service busca o usuário completo (com senha hasheada), aplica as alterações
-                // e só muda a senha se uma nova foi fornecida e hasheada.
 
-                // Abordagem: Se não for alterar senha, não passamos a senha para o DAO (ou passamos a antiga)
-                // Se o seu DAO.alterar atualiza todos os campos, incluindo a senha,
-                // e usuario.getSenha() for null aqui, ele vai tentar setar a senha como null no banco.
-                // Vamos assumir que o DAO.alterar foi ajustado para não mudar a senha se ela for null no objeto.
-                // Se não, a melhor forma é:
-                Usuario usuarioDB = dao.buscar(usuario.getId()); // Este buscar DEVE retornar a senha hasheada
+                Usuario usuarioDB = dao.buscar(usuario.getId()); // Este buscar DEVE retornar a senha
                 if(usuarioDB != null) {
                     usuario.setSenha(usuarioDB.getSenha()); // Mantém a senha antiga se não for para alterar
                 } else {
@@ -73,15 +54,7 @@ public class UsuarioService {
                 return "Erro: Usuário não encontrado para manter senha.";
             }
         } else {
-            // Se for para alterar a senha, ela já deve ter vindo do servlet (e idealmente hasheada lá ou aqui)
-            // IMPORTANTE: HASHEAR A SENHA AQUI se não foi feito no servlet
-            // Exemplo:
-            // if (usuario.getSenha() != null && !usuario.getSenha().isEmpty()) {
-            //     String senhaHasheada = BCrypt.hashpw(usuario.getSenha(), BCrypt.gensalt());
-            //     usuario.setSenha(senhaHasheada);
-            // } else {
-            //     return "Erro: Nova senha inválida.";
-            // }
+
             System.out.println("Service - Alterando Usuário: " + usuario.getEmail() + " Nova Senha (ANTES DO DAO): " + usuario.getSenha()); // Log para debug
         }
 

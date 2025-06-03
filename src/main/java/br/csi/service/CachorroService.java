@@ -5,6 +5,7 @@ import br.csi.model.Cachorro;
 import br.csi.model.Usuario;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class CachorroService {
 
@@ -40,6 +41,11 @@ public class CachorroService {
 
     public ArrayList<Cachorro> listar(){
         return dao.listarCachorro ();
+    }
+
+    // Para listagem de usuário comum
+    public List<Cachorro> listarDisponiveisParaAdocao() {
+        return dao.listarCachorrosDisponiveis();
     }
 
     public Cachorro buscar (int id) {

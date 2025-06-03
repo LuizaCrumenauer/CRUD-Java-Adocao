@@ -3,10 +3,18 @@ package br.csi.model;
 public class Adocao {
 
     private int id;
-    private int cachorroId;
-    private int adotanteId;
+    private int cachorro_id;
+    private int adotante_id;
     private String informacoes;
+    private Cachorro cachorro;
 
+    public Cachorro getCachorro () {
+        return cachorro;
+    }
+
+    public void setCachorro ( Cachorro cachorro ) {
+        this.cachorro = cachorro;
+    }
 
     public String getInformacoes () {
         return informacoes;
@@ -24,20 +32,20 @@ public class Adocao {
         this.id = id;
     }
 
-    public int getCachorroId() {
-        return cachorroId;
+    public int getCachorroId () {
+        return cachorro_id;
     }
 
     public void setCachorroId(int cachorroId) {
-        this.cachorroId = cachorroId;
+        this.cachorro_id = cachorroId;
     }
 
     public int getAdotanteId() {
-        return adotanteId;
+        return adotante_id;
     }
 
     public void setAdotanteId(int adotanteId) {
-        this.adotanteId = adotanteId;
+        this.adotante_id = adotanteId;
     }
 
 

@@ -2,8 +2,6 @@ package br.csi.controller;
 
 import br.csi.model.Usuario;
 import br.csi.service.UsuarioService;
-// Importe uma biblioteca de hashing, por exemplo, BCrypt (se você for usá-la)
-// import org.mindrot.jbcrypt.BCrypt; // Exemplo com jBCrypt
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -17,7 +15,7 @@ public class UsuarioServlet extends HttpServlet {
 
     private static final UsuarioService service = new UsuarioService();
 
-    // Função auxiliar para verificar se o usuário é admin (MANTENHA ESTA FUNÇÃO)
+    // Função auxiliar para verificar se o usuário é admin
     private boolean isAdmin(HttpServletRequest req) {
         HttpSession session = req.getSession(false);
         if (session != null) {
@@ -30,22 +28,22 @@ public class UsuarioServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        req.setCharacterEncoding("UTF-8"); // Definir encoding no início
+        req.setCharacterEncoding("UTF-8");
         HttpSession session = req.getSession();
         String opcao = req.getParameter("opcao");
         String acao = req.getParameter("acao"); // Para o cadastro de admin
 
-        // --- LÓGICA DE CADASTRO DE ADMIN (se você mantiver separada) ---
+        // --- LÓGICA DE CADASTRO DE ADMIN
         if ("cadastrarAdmin".equals(acao)) {
             if (!isAdmin(req)) {
                 session.setAttribute("msg_login", "Acesso negado. Você precisa ser administrador.");
-                resp.sendRedirect(req.getContextPath() + "/index.jsp");
+                resp.sendRedirect(req.getContextPath() + "/");
                 return;
             }
             System.out.println("UsuarioServlet: Tentando CADASTRAR novo ADMINISTRADOR");
             String nomeAdmin = req.getParameter("nome");
             String emailAdmin = req.getParameter("email");
-            String senhaAdmin = req.getParameter("senha"); // PRECISA SER HASHEADA
+            String senhaAdmin = req.getParameter("senha");
 
             if (nomeAdmin == null || nomeAdmin.trim().isEmpty() ||
                     emailAdmin == null || emailAdmin.trim().isEmpty() ||
@@ -58,14 +56,11 @@ public class UsuarioServlet extends HttpServlet {
 
             Usuario novoAdmin = new Usuario();
             novoAdmin.setNome(nomeAdmin);
-            novoAdmin.setEndereco(req.getParameter("endereco")); // Coletar outros campos
+            novoAdmin.setEndereco(req.getParameter("endereco"));
             novoAdmin.setCpf(req.getParameter("cpf"));
             novoAdmin.setCelular(req.getParameter("celular"));
             novoAdmin.setEmail(emailAdmin);
-            // Exemplo de Hashing (substitua com sua implementação real)
-            // String senhaHasheadaAdmin = BCrypt.hashpw(senhaAdmin, BCrypt.gensalt());
-            // novoAdmin.setSenha(senhaHasheadaAdmin);
-            novoAdmin.setSenha(senhaAdmin); // REMOVER APÓS IMPLEMENTAR HASHING
+            novoAdmin.setSenha(senhaAdmin);
             novoAdmin.setAdmin(true);
 
             String retornoAdmin = service.inserir(novoAdmin);
@@ -119,10 +114,7 @@ public class UsuarioServlet extends HttpServlet {
                     return;
                 }
                 // Se as senhas coincidem e não estão vazias, prepare para alterar
-                // IMPORTANTE: HASHEAR A SENHA AQUI!
-                // Exemplo: String senhaHasheada = BCrypt.hashpw(novaSenha, BCrypt.gensalt());
-                // usuarioParaAlterar.setSenha(senhaHasheada);
-                usuarioParaAlterar.setSenha(novaSenha); // REMOVER/SUBSTITUIR APÓS IMPLEMENTAR HASHING
+                usuarioParaAlterar.setSenha(novaSenha);
                 alterarSenha = true;
                 System.out.println("UsuarioServlet: Senha será alterada para o usuário ID: " + idStr);
             } else {
@@ -151,14 +143,14 @@ public class UsuarioServlet extends HttpServlet {
         }
         // --- LÓGICA DE CADASTRO DE USUÁRIO COMUM (PÚBLICO) ---
         else {
-            // Seu código de cadastro de usuário comum (que já funciona)
+
             System.out.println("UsuarioServlet: Tentando CADASTRAR novo usuário COMUM");
             String nome = req.getParameter("nome");
             String endereco = req.getParameter("endereco");
             String cpf = req.getParameter("cpf");
             String celular = req.getParameter("celular");
             String email = req.getParameter("email");
-            String senha = req.getParameter("senha"); // PRECISA SER HASHEADA
+            String senha = req.getParameter("senha");
 
             if (nome == null || nome.trim().isEmpty() ||
                     email == null || email.trim().isEmpty() ||
@@ -175,16 +167,14 @@ public class UsuarioServlet extends HttpServlet {
             novoUsuario.setCpf(cpf);
             novoUsuario.setCelular(celular);
             novoUsuario.setEmail(email);
-            // String senhaHasheada = BCrypt.hashpw(senha, BCrypt.gensalt());
-            // novoUsuario.setSenha(senhaHasheada);
-            novoUsuario.setSenha(senha); // REMOVER APÓS IMPLEMENTAR HASHING
+            novoUsuario.setSenha(senha);
             novoUsuario.setAdmin(false);
 
             String retorno = service.inserir(novoUsuario);
 
             if (retorno.toLowerCase().contains("sucesso")) {
                 session.setAttribute("msg_cadastro_sucesso", "Cadastro realizado com sucesso! Faça o login.");
-                resp.sendRedirect(req.getContextPath() + "/index.jsp");
+                resp.sendRedirect(req.getContextPath() + "/");
             } else {
                 req.setAttribute("msg_erro_cadastro", retorno);
                 RequestDispatcher rd = req.getRequestDispatcher("WEB-INF/pages/cadastroUsuario.jsp");
@@ -197,13 +187,9 @@ public class UsuarioServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        // Seu método doGet existente (que lida com mostrarFormCadastro, editar, excluir, listarTodos, mostrarDashboardAdmin)
-        // Certifique-se de que a verificação isAdmin(req) protege as rotas de admin.
-        // O código do doGet que você forneceu no prompt anterior (java_usuario_servlet_redirect_fix)
-        // já tem uma boa estrutura para isso.
+
         System.out.println("UsuarioServlet: Entrou no doGet");
         req.setCharacterEncoding("UTF-8");
-        resp.setCharacterEncoding("UTF-8");
         HttpSession session = req.getSession();
 
         String msgFlashDashboard = (String) session.getAttribute("msg_flash_dashboard");
@@ -293,15 +279,12 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-        Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
-        if(usuarioLogado != null && !usuarioLogado.isAdmin()){
-            resp.sendRedirect(req.getContextPath() + "/dashboard_usuario.jsp");
-        } else if (usuarioLogado == null && opcao != null && !opcao.equals("mostrarFormCadastro")){
-            session.setAttribute("msg_login", "Você precisa estar logado para esta ação.");
-            resp.sendRedirect(req.getContextPath() + "/index.jsp");
+        if ("mostrarDashboardUsuario".equals(opcao)) {
+            rd = req.getRequestDispatcher("WEB-INF/pages/dashboard_usuario.jsp");
+            rd.forward(req, resp);
+            return;
         }
-        else {
-            resp.sendRedirect(req.getContextPath() + "/index.jsp");
-        }
+
+
     }
 }

@@ -1,91 +1,81 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ page isELIgnored="false" %>
 
-<html>
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-    <title>Alterar Dados do Cachorro</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f8f9fa; color: #333; }
-        .container { max-width: 500px; margin: auto; background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h2 { color: #0056b3; text-align: center; margin-bottom:20px; }
-        label { display: block; margin-bottom: 6px; font-weight: 500; }
-        input[type="text"], select {
-            width: calc(100% - 22px);
-            padding: 9px;
-            margin-bottom: 15px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        input[type="checkbox"] { margin-right: 5px; vertical-align: middle; }
-        .checkbox-label { font-weight: normal; }
-        .form-actions input[type="submit"], .button-link {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 18px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 0.95em;
-            margin-right: 10px;
-        }
-        .form-actions input[type="submit"]:hover { background-color: #0056b3; }
-        .button-link.cancel { background-color: #6c757d; }
-        .button-link.cancel:hover { background-color: #5a6268; }
-        .message { padding: 12px; margin-bottom: 20px; border-radius: 4px; text-align: center; font-weight:500; }
-        .error-message { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alterar Dados do Pet - Lar Doce Lar Animal</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css" type="text/css"/>
 </head>
 <body>
-<div class="container">
-    <h2>Alterar Cachorro: <c:out value="${cachorro.nome}"/></h2>
+<div class="wrapper">
+    <header>
+        <h1>Lar Doce Lar Animal</h1>
+        <p class="logo-subtitle">Painel Administrativo - Alterar Dados do Pet</p>
+    </header>
 
-    <c:if test="${not empty msg}">
-        <p class="message ${msg.toLowerCase().contains('sucesso') ? 'success-message' : 'error-message'}">
-            <c:out value="${msg}"/>
-        </p>
-    </c:if>
+    <nav>
+        <a href="${pageContext.request.contextPath}/usuario?opcao=mostrarDashboardAdmin">Painel Admin</a>
+        <a href="${pageContext.request.contextPath}/usuario?opcao=listarTodos">Gerenciar Usuários</a>
+        <a href="${pageContext.request.contextPath}/cachorro" class="active">Gerenciar Pets</a>
+        <a href="${pageContext.request.contextPath}/login?logout=true">Sair</a>
+    </nav>
 
-    <form action="${pageContext.request.contextPath}/cachorro" method="post">
-        <input type="hidden" name="opcao" value="atualizar">
-        <input type="hidden" name="id" value="${cachorro.id}"> <%-- Corrigido de id_cachorro para id para corresponder ao seu servlet --%>
+    <div class="container">
+        <div class="form-container-wrapper">
+            <div class="form-container cadastro">
+                <h2 class="page-title" style="font-size: 1.8em; margin-bottom: 20px;">Alterar Pet: <c:out value="${cachorro.nome}"/></h2>
 
-        <div>
-            <label for="nome">Nome:</label>
-            <input type="text" id="nome" name="nome" value="<c:out value="${cachorro.nome}"/>" required>
+                <c:if test="${not empty msg}">
+                    <div class="message-container ${msg.toLowerCase().contains('sucesso') ? 'success' : 'error'}">
+                        <p><c:out value="${msg}"/></p>
+                    </div>
+                </c:if>
+
+                <form action="${pageContext.request.contextPath}/cachorro" method="post">
+                    <input type="hidden" name="opcao" value="atualizar">
+                    <input type="hidden" name="id" value="${cachorro.id}">
+
+                    <div class="form-group">
+                        <label for="nome">Nome:</label>
+                        <input type="text" id="nome" name="nome" value="<c:out value="${cachorro.nome}"/>" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="raca">Raça:</label>
+                        <input type="text" id="raca" name="raca" value="<c:out value="${cachorro.raca}"/>" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sexo">Sexo:</label>
+                        <select id="sexo" name="sexo" required>
+                            <option value="Macho" ${cachorro.sexo == 'Macho' ? 'selected' : ''}>Macho</option>
+                            <option value="Fêmea" ${cachorro.sexo == 'Fêmea' ? 'selected' : ''}>Fêmea</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="porte">Porte:</label>
+                        <select id="porte" name="porte" required>
+                            <option value="Pequeno" ${cachorro.porte == 'Pequeno' ? 'selected' : ''}>Pequeno</option>
+                            <option value="Médio" ${cachorro.porte == 'Médio' ? 'selected' : ''}>Médio</option>
+                            <option value="Grande" ${cachorro.porte == 'Grande' ? 'selected' : ''}>Grande</option>
+                        </select>
+                    </div>
+                    <div class="form-group form-group-checkbox">
+                        <input type="checkbox" id="adotado" name="adotado" value="true" ${cachorro.adotado ? 'checked' : ''}>
+                        <label for="adotado" class="checkbox-label">Adotado?</label>
+                    </div>
+
+                    <input type="submit" value="Salvar Alterações" style="margin-top: 10px;">
+                    <a href="${pageContext.request.contextPath}/cachorro" class="button back-link-button" style="margin-top: 10px;">Cancelar</a>
+                </form>
+            </div>
         </div>
-        <div>
-            <label for="raca">Raça:</label>
-            <input type="text" id="raca" name="raca" value="<c:out value="${cachorro.raca}"/>" required>
-        </div>
-        <div>
-            <label for="sexo">Sexo:</label>
-            <select id="sexo" name="sexo" required>
-                <option value="Macho" ${cachorro.sexo == 'Macho' ? 'selected' : ''}>Macho</option>
-                <option value="Fêmea" ${cachorro.sexo == 'Fêmea' ? 'selected' : ''}>Fêmea</option>
-            </select>
-        </div>
-        <div>
-            <label for="porte">Porte:</label>
-            <select id="porte" name="porte" required>
-                <option value="Pequeno" ${cachorro.porte == 'Pequeno' ? 'selected' : ''}>Pequeno</option>
-                <option value="Médio" ${cachorro.porte == 'Médio' ? 'selected' : ''}>Médio</option>
-                <option value="Grande" ${cachorro.porte == 'Grande' ? 'selected' : ''}>Grande</option>
-            </select>
-        </div>
-        <div>
-            <label for="adotado">
-                <input type="checkbox" id="adotado" name="adotado" value="true" ${cachorro.adotado ? 'checked' : ''}>
-                <span class="checkbox-label">Adotado</span>
-            </label>
-        </div>
-        <div class="form-actions" style="margin-top: 20px;">
-            <input type="submit" value="Salvar Alterações">
-            <a href="${pageContext.request.contextPath}/cachorro" class="button-link cancel">Cancelar</a>
-        </div>
-    </form>
-</div>
+    </div> </div> <footer>
+    <p>&copy; <fmt:formatDate value="<%=new java.util.Date()%>" pattern="yyyy" /> Lar Doce Lar Animal. Todos os direitos reservados.</p>
+    <p>Trabalho de Aula - POOW1</p>
+</footer>
 </body>
 </html>

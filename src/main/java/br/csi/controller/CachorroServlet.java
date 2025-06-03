@@ -1,8 +1,8 @@
 package br.csi.controller;
+import br.csi.dao.AdocaoDAO;
 import br.csi.model.Cachorro;
-import br.csi.model.Usuario;
+import br.csi.service.AdocaoService;
 import br.csi.service.CachorroService;
-import br.csi.service.UsuarioService;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -15,12 +15,13 @@ import java.util.List;
 public class CachorroServlet extends HttpServlet {
 
     private static final CachorroService service = new CachorroService();
+    private static final AdocaoService adocaoService = new AdocaoService (); // Adicionado AdocaoService
 
     @Override
     protected void doPost ( HttpServletRequest req, HttpServletResponse resp ) throws ServletException, IOException {
 
         HttpSession session = req.getSession();
-        req.setCharacterEncoding("UTF-8"); // Definir encoding no início
+        req.setCharacterEncoding("UTF-8");
 
         String opcao = req.getParameter("opcao");
         String id = req.getParameter("id");
@@ -39,12 +40,32 @@ public class CachorroServlet extends HttpServlet {
 
         String retorno;
 
-        if ("atualizar".equals(opcao) && id != null) {
-            cachorro.setId(Integer.parseInt ( id ));
-            retorno = service.alterar(cachorro);
-            session.setAttribute("msg", retorno);
-            // redireciona para o form de edição (flash vai no session)
-            resp.sendRedirect("cachorro");
+        if ("atualizar".equals(opcao) && id != null && !id.isEmpty()) {
+            try {
+                int cachorroId = Integer.parseInt(id);
+                cachorro.setId(cachorroId);
+                retorno = service.alterar(cachorro); // Chamada ao serviço de cachorro
+
+                // Se o cachorro foi alterado com sucesso E foi marcado como NÃO ADOTADO
+                if (retorno != null && retorno.toLowerCase().contains("sucesso") && !cachorro.isAdotado()) {
+                    // Chamar o metodo do AdocaoService para excluir o vínculo de adoção
+                    System.out.println("CachorroServlet: Cachorro ID " + cachorroId + " marcado como NÃO ADOTADO. Tentando remover vínculo de adoção via AdocaoService.");
+                    boolean exclusaoAdocaoOk = adocaoService.removerVinculoAdocao(cachorroId);
+
+                    if (exclusaoAdocaoOk) {
+                        System.out.println("INFO (CachorroServlet): Vínculo de adoção para o cachorro ID " + cachorroId + " removido/verificado com sucesso via Service.");
+                        session.setAttribute("msgAdocao", "Vínculo de adoção anterior removido.");
+                    } else {
+                        System.out.println("WARN (CachorroServlet): Falha ao tentar remover vínculo de adoção para o cachorro ID " + cachorroId + " via Service.");
+                        retorno += " (Aviso: problema ao remover adoção anterior.)";
+                    }
+                }
+                session.setAttribute("msg", retorno);
+            } catch (NumberFormatException e) {
+                session.setAttribute("msg", "Erro: ID do cachorro inválido.");
+                e.printStackTrace();
+            }
+            resp.sendRedirect(req.getContextPath() + "/cachorro"); // Usar getContextPath para URLs relativas corretas
             return;
         }
 
@@ -82,7 +103,6 @@ public class CachorroServlet extends HttpServlet {
         }
 
         if ("excluir".equals(opcao) && info != null) {
-            // — EXCLUSÃO via redirect (flash na sessão) —
             String retorno = service.excluir(Integer.parseInt(info));
             session.setAttribute("msg", retorno);
             resp.sendRedirect("cachorro");

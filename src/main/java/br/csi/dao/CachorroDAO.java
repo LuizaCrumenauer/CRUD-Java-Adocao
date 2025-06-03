@@ -7,6 +7,8 @@ import java.util.ArrayList;
 
 public class CachorroDAO {
 
+    private String status;
+
     public Boolean inserirCachorro ( Cachorro cachorro) {
 
         try {
@@ -20,14 +22,14 @@ public class CachorroDAO {
             stmt.setString(4, cachorro.getPorte());
             stmt.setBoolean ( 5,cachorro.isAdotado ());
 
-            stmt.execute();
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0;
 
         }catch (SQLException | ClassNotFoundException e) {
-            System.out.println(e.getMessage());
-            System.out.println("Erro ao inserir cachorro");
+            System.err.println("Erro ao inserir cachorro: " + e.getMessage());
+            e.printStackTrace();
+            return false;
         }
-
-        return true;
 
     }
 
@@ -40,15 +42,15 @@ public class CachorroDAO {
             );
 
             stmt.setInt(1, id);
-            stmt.execute();
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0;
 
 
         }catch (SQLException | ClassNotFoundException e) {
-            System.out.println(e.getMessage());
-            System.out.println("Erro ao excluir cachorro");
+            System.err.println("Erro ao excluir cachorro: " + e.getMessage());
+            e.printStackTrace();
+            return false;
         }
-
-        return true;
 
     }
 
@@ -68,15 +70,44 @@ public class CachorroDAO {
             stmt.setBoolean(5, cachorro.isAdotado());
             stmt.setInt(6, cachorro.getId());
 
-            stmt.execute();
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0;
 
         } catch (ClassNotFoundException e) {
             System.err.println("Driver JDBC não encontrado: " + e.getMessage());
+            e.printStackTrace();
+            return false;
         } catch (SQLException e) {
             System.err.println("Erro SQL ao atualizar cachorro: " + e.getMessage());
+            e.printStackTrace();
+            return false;
         }
-        return true;
     }
+
+    public boolean marcarComoAdotado(int idCachorro) {
+        String sql = "UPDATE cachorro SET adotado = TRUE WHERE id = ?";
+        System.out.println("DAO: Tentando marcar cachorro ID " + idCachorro + " como adotado.");
+        try (Connection conn = ConectarBancoDados.conectarBancoPostgress();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, idCachorro);
+            int affectedRows = stmt.executeUpdate();
+
+            if (affectedRows > 0) {
+                System.out.println("DAO: Cachorro ID " + idCachorro + " marcado como adotado com sucesso. Linhas afetadas: " + affectedRows);
+                return true;
+            } else {
+                System.out.println("DAO: Nenhuma linha atualizada para marcar cachorro ID " + idCachorro + " como adotado (cachorro não encontrado ou já estava com status correto?).");
+                return false;
+            }
+
+        } catch (SQLException | ClassNotFoundException e) {
+            System.err.println("DAO: Erro ao marcar cachorro ID " + idCachorro + " como adotado: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
     public ArrayList<Cachorro> listarCachorro() {
         ArrayList<Cachorro> cachorros = new ArrayList<>();
@@ -99,12 +130,35 @@ public class CachorroDAO {
 
                 cachorros.add(c);
             }
-        } catch (ClassNotFoundException e) {
-            System.err.println("Driver JDBC não encontrado: " + e.getMessage());
-        } catch (SQLException e) {
-            System.err.println("Erro ao listar cachorros: " + e.getMessage());
+        } catch (ClassNotFoundException | SQLException e) {
+            System.err.println("Erro ao listar todos os cachorros: " + e.getMessage());
+            e.printStackTrace();
         }
 
+        return cachorros;
+    }
+
+    // Lista apenas cachorros disponíveis para adoção (adotado = false)
+    public ArrayList<Cachorro> listarCachorrosDisponiveis() {
+        ArrayList<Cachorro> cachorros = new ArrayList<>();
+        String sql = "SELECT * FROM cachorro WHERE adotado = false ORDER BY nome";
+        try (Connection conn = ConectarBancoDados.conectarBancoPostgress();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Cachorro c = new Cachorro();
+                c.setId(rs.getInt("id"));
+                c.setNome(rs.getString("nome"));
+                c.setRaca(rs.getString("raca"));
+                c.setSexo(rs.getString("sexo"));
+                c.setPorte(rs.getString("porte"));
+                c.setAdotado(rs.getBoolean("adotado"));
+                cachorros.add(c);
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            System.err.println("Erro ao listar cachorros disponíveis: " + e.getMessage());
+            e.printStackTrace();
+        }
         return cachorros;
     }
 
@@ -130,10 +184,9 @@ public class CachorroDAO {
                 }
             }
 
-        } catch (ClassNotFoundException e) {
-            System.err.println("Driver JDBC não encontrado: " + e.getMessage());
-        } catch (SQLException e) {
+        } catch (ClassNotFoundException | SQLException e) {
             System.err.println("Erro ao buscar cachorro por ID: " + e.getMessage());
+            e.printStackTrace();
         }
 
         return cachorro;

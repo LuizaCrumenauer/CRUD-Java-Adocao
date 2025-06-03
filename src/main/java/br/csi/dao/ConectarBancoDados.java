@@ -10,14 +10,11 @@ public class ConectarBancoDados {
     public static Connection conectarBancoPostgress() throws ClassNotFoundException, SQLException {
         Class.forName("org.postgresql.Driver");
         System.out.println("Driver carregado");
-        String url = "jdbc:postgresql://localhost:5432/sistema_adocao";
+        String url = "jdbc:postgresql://localhost:5432/sistema-adocao-simples";
         String user = "postgres";
         String senha = "4682";
         Connection conn =
                 DriverManager.getConnection(url, user, senha);
         return conn;
-    }
-    public Connection conectarBancoPostgresMySql(){
-        return null;
     }
 }

@@ -8,8 +8,8 @@ import java.util.ArrayList;
 
 public class UsuarioDAO {
 
-    // Método para verificar se um email já existe (útil antes de inserir)
-    // Este método já estava correto na sua versão anterior, mas o incluo para contexto.
+    // Metodo para verificar se um email já existe (útil antes de inserir)
+    // Este metodo nao esta sendo implementado, mas deixei aqui pois pode ser necessário futuramente
     public boolean emailJaExiste(String email) {
         String sql = "SELECT id FROM usuario WHERE email = ?";
         try (Connection conn = ConectarBancoDados.conectarBancoPostgress();
@@ -29,8 +29,8 @@ public class UsuarioDAO {
     }
 
     public Boolean inserir(Usuario usuario) {
-        // Opcional: Verificar se o email já existe aqui, embora o service possa fazer isso.
-        // Se o banco tiver uma constraint UNIQUE no email, ele lançará uma SQLException de qualquer forma.
+        // aqui eu verificaria se o email já existe
+
         // if (emailJaExiste(usuario.getEmail())) {
         //     System.out.println("DAO: Tentativa de inserir usuário com email já existente: " + usuario.getEmail());
         //     return false;
@@ -46,31 +46,21 @@ public class UsuarioDAO {
             stmt.setString(3, usuario.getCpf());
             stmt.setString(4, usuario.getCelular());
             stmt.setString(5, usuario.getEmail());
-            stmt.setString(6, usuario.getSenha()); // Lembre-se: HASHEAR A SENHA ANTES DE CHEGAR AQUI!
+            stmt.setString(6, usuario.getSenha());
             stmt.setBoolean(7, usuario.isAdmin());
 
-            int affectedRows = stmt.executeUpdate(); // Usar executeUpdate() e verificar o retorno
+            int affectedRows = stmt.executeUpdate();
 
             if (affectedRows > 0) {
                 System.out.println("DAO: Usuário inserido com sucesso. Linhas afetadas: " + affectedRows);
                 return true; // Sucesso se uma ou mais linhas foram afetadas
             } else {
                 System.out.println("DAO: Nenhuma linha foi inserida para o usuário: " + usuario.getEmail());
-                return false; // Nenhuma linha afetada (pode indicar um problema, embora raro para INSERT sem WHERE)
+                return false;
             }
 
         } catch (SQLException | ClassNotFoundException e) {
             System.err.println("DAO: Erro ao inserir usuário: " + e.getMessage());
-            // Verificar se é erro de constraint UNIQUE para email ou cpf
-            if (e instanceof SQLException) {
-                SQLException sqlEx = (SQLException) e;
-                System.err.println("DAO: SQLState: " + sqlEx.getSQLState());
-                System.err.println("DAO: Error Code: " + sqlEx.getErrorCode());
-                // No PostgreSQL, um erro de violação de constraint UNIQUE geralmente tem SQLState '23505'
-                if ("23505".equals(sqlEx.getSQLState())) {
-                    System.err.println("DAO: Provável violação de constraint UNIQUE (ex: email ou CPF já existe).");
-                }
-            }
             e.printStackTrace(); // Imprimir o stack trace completo para debug
             return false; // Retorna false em caso de exceção
         }
@@ -96,13 +86,6 @@ public class UsuarioDAO {
 
         } catch (SQLException | ClassNotFoundException e) {
             System.err.println ( "DAO: Erro ao alterar usuário: " + e.getMessage () );
-            if (e instanceof SQLException) {
-                SQLException sqlEx = (SQLException) e;
-                // No PostgreSQL, um erro de violação de constraint UNIQUE geralmente tem SQLState '23505'
-                if ("23505".equals ( sqlEx.getSQLState () )) {
-                    System.err.println ( "DAO: Provável violação de constraint UNIQUE ao alterar (ex: email ou CPF já existe para outro usuário)." );
-                }
-            }
             e.printStackTrace ();
             return false;
         }
@@ -185,11 +168,11 @@ public class UsuarioDAO {
             }
 
             stmt.setInt(1, id);
+
         }catch (SQLException | ClassNotFoundException e) {
             System.out.println(e.getMessage());
             System.out.println("Erro ao buscar usuario");
         }
-
         return usuario;
 
     }

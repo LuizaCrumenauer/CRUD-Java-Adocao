@@ -103,7 +103,7 @@ public class Teste {
         for (Adocao a : adocaoDAO.listarAdocoes()) {
             System.out.println(
                     "Id: " + a.getId() +
-                            ", CachorroId: " + a.getCachorroId() +
+                            ", CachorroId: " + a.getCachorroId () +
                             ", AdotanteId: " + a.getAdotanteId() +
                             ", Data: " + a.getInformacoes ()
             );
